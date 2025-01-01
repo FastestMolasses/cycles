@@ -9,7 +9,6 @@ struct CyclesInitParams {
   int samples;
   int threads;
   const char *shading_system;  // "svm" or "osl"
-  bool use_auto_tile;
   int tile_size;
   bool background;
   bool quiet;

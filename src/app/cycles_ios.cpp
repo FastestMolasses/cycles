@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "device/device.h"
 #include "scene/camera.h"
 #include "scene/integrator.h"
@@ -7,6 +9,7 @@
 
 #include "util/path.h"
 #include "util/string.h"
+#include "util/function.h"
 
 #ifdef WITH_USD
 #  include "hydra/file_reader.h"
@@ -15,6 +18,8 @@
 #include "app/cycles_xml.h"
 #include "app/oiio_output_driver.h"
 #include "cycles_ios.h"
+
+CCL_NAMESPACE_BEGIN
 
 struct Options {
   Session *session;
@@ -29,8 +34,15 @@ struct Options {
   string output_pass;
 } options;
 
+void validate_options();
+static void session_print(const string &str);
+static void session_print_status();
+static BufferParams &session_buffer_params();
+
 void cycles_ios_initialize(const CyclesInitParams *params)
 {
+  validate_options();
+
   // Initialize path and logging
   util_logging_init(nullptr);
   path_init();
@@ -39,8 +51,41 @@ void cycles_ios_initialize(const CyclesInitParams *params)
   options.width = params->width;
   options.height = params->height;
   options.filepath = params->filepath;
+  options.quiet = params->quiet;
 
-  // Initialize the session
+  // Session params
+  options.session_params.samples = params->samples;
+  options.session_params.threads = params->threads;
+  options.session_params.background = params->background;
+  options.session_params.use_profiling = params->use_profiling;
+  options.session_params.tile_size = params->tile_size;
+  options.session_params.use_auto_tile = options.session_params.tile_size > 0;
+
+  vector<DeviceInfo> devices = Device::available_devices(DEVICE_MASK(DEVICE_METAL));
+  if (!devices.empty()) {
+    options.session_params.device = devices.front();
+  }
+  else {
+    fprintf(stderr, "No matching device found for: %s\n", params->device_name);
+    return;
+  }
+
+  if (string(params->shading_system) == "osl") {
+    options.scene_params.shadingsystem = SHADINGSYSTEM_OSL;
+  }
+  else {
+    options.scene_params.shadingsystem = SHADINGSYSTEM_SVM;
+  }
+
+#ifdef WITH_OSL
+  if (options.scene_params.shadingsystem == SHADINGSYSTEM_OSL &&
+      options.session_params.device.type != DEVICE_CPU)
+  {
+    fprintf(stderr, "OSL shading system only works with CPU device\n");
+    return;
+  }
+#endif
+
   options.output_pass = "combined";
   options.session = new Session(options.session_params, options.scene_params);
 
@@ -53,10 +98,8 @@ void cycles_ios_initialize(const CyclesInitParams *params)
     options.session->progress.set_update_callback(function_bind(&session_print_status));
   }
 
-  /* load scene */
   options.scene = options.session->scene;
 
-  /* Read XML or USD */
 #ifdef WITH_USD
   if (!string_endswith(string_to_lower(options.filepath), ".xml")) {
     HD_CYCLES_NS::HdCyclesFileReader::read(options.session, options.filepath.c_str());
@@ -67,7 +110,7 @@ void cycles_ios_initialize(const CyclesInitParams *params)
     xml_read_file(options.scene, options.filepath.c_str());
   }
 
-  /* Camera width/height override? */
+  // Camera width/height override?
   if (!(options.width == 0 || options.height == 0)) {
     options.scene->camera->set_full_width(options.width);
     options.scene->camera->set_full_height(options.height);
@@ -76,11 +119,8 @@ void cycles_ios_initialize(const CyclesInitParams *params)
     options.width = options.scene->camera->get_full_width();
     options.height = options.scene->camera->get_full_height();
   }
-
-  /* Calculate Viewplane */
   options.scene->camera->compute_auto_viewplane();
 
-  /* add pass for output. */
   Pass *pass = options.scene->create_node<Pass>();
   pass->set_name(ustring(options.output_pass.c_str()));
   pass->set_type(PASS_COMBINED);
@@ -104,6 +144,20 @@ void cycles_ios_cleanup()
   }
 }
 
+void validate_options()
+{
+  if (options.session_params.device.type == DEVICE_NONE) {
+    fprintf(stderr, "Unknown device: %s\n", options.session_params.device.name.c_str());
+    exit(EXIT_FAILURE);
+  } else if (options.session_params.samples < 0) {
+    fprintf(stderr, "Invalid number of samples: %d\n", options.session_params.samples);
+    exit(EXIT_FAILURE);
+  } else if (options.filepath == "") {
+    fprintf(stderr, "No file path specified\n");
+    exit(EXIT_FAILURE);
+  }
+}
+
 static BufferParams &session_buffer_params()
 {
   static BufferParams buffer_params;
@@ -119,7 +173,6 @@ static void session_print_status()
 {
   string status, substatus;
 
-  /* get status */
   double progress = options.session->progress.get_progress();
   options.session->progress.get_status(status, substatus);
 
@@ -127,17 +180,14 @@ static void session_print_status()
     status += ": " + substatus;
   }
 
-  /* print status */
   status = string_printf("Progress %05.2f   %s", (double)progress * 100, status.c_str());
   session_print(status);
 }
 
 static void session_print(const string &str)
 {
-  /* print with carriage return to overwrite previous */
   printf("\r%s", str.c_str());
 
-  /* add spaces to overwrite longer previous print */
   static int maxlen = 0;
   int len = str.size();
   maxlen = max(len, maxlen);
@@ -146,6 +196,7 @@ static void session_print(const string &str)
     printf(" ");
   }
 
-  /* flush because we don't write an end of line */
   fflush(stdout);
 }
+
+CCL_NAMESPACE_END
