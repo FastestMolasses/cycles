@@ -189,6 +189,7 @@ endif()
 # Apple Metal
 if(APPLE)
   option(WITH_CYCLES_DEVICE_METAL "Enable Cycles Apple Metal compute support" ON)
+  option(IOS "Build for iOS" ON)
 endif()
 
 # oneAPI

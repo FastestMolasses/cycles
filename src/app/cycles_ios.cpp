@@ -64,16 +64,14 @@ void cycles_ios_initialize(const CyclesInitParams *params)
   vector<DeviceInfo> devices = Device::available_devices(DEVICE_MASK(DEVICE_METAL));
   if (!devices.empty()) {
     options.session_params.device = devices.front();
-  }
-  else {
-    fprintf(stderr, "No matching device found for: %s\n", params->device_name);
+  } else {
+    fprintf(stderr, "No device found\n");
     return;
   }
 
   if (string(params->shading_system) == "osl") {
     options.scene_params.shadingsystem = SHADINGSYSTEM_OSL;
-  }
-  else {
+  } else {
     options.scene_params.shadingsystem = SHADINGSYSTEM_SVM;
   }
 
@@ -147,7 +145,7 @@ void cycles_ios_cleanup()
 void validate_options()
 {
   if (options.session_params.device.type == DEVICE_NONE) {
-    fprintf(stderr, "Unknown device: %s\n", options.session_params.device.name.c_str());
+    fprintf(stderr, "Unknown device: %s\n", Device::string_from_type(options.session_params.device.type).c_str());
     exit(EXIT_FAILURE);
   } else if (options.session_params.samples < 0) {
     fprintf(stderr, "Invalid number of samples: %d\n", options.session_params.samples);

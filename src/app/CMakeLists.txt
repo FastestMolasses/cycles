@@ -147,3 +147,21 @@ if(WITH_CYCLES_PRECOMPUTE)
     TARGETS cycles_precompute
     DESTINATION ${CMAKE_INSTALL_PREFIX})
 endif()
+
+if(IOS)
+  set(SRC
+    cycles_ios.cpp
+    cycles_ios.h
+    cycles_xml.cpp
+    cycles_xml.h
+    oiio_output_driver.cpp
+    oiio_output_driver.h
+  )
+
+  add_library(cycles_ios STATIC ${SRC})
+  target_link_libraries(cycles_ios PRIVATE ${LIB})
+
+  install(
+    TARGETS cycles_ios
+    DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()
