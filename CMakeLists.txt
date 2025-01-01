@@ -110,16 +110,16 @@ set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
 option(WITH_LIBS_PRECOMPILED        "Use precompiled library dependencies" ON)
 
 # Library dependencies
-option(WITH_CYCLES_ALEMBIC          "Build with Alembic procedural support" ON)
-option(WITH_CYCLES_EMBREE           "Build with Embree support" ON)
+option(WITH_CYCLES_ALEMBIC          "Build with Alembic procedural support" OFF)
+option(WITH_CYCLES_EMBREE           "Build with Embree support" OFF)
 option(WITH_CYCLES_LOGGING          "Build with logging support (using glog)" OFF)
-option(WITH_CYCLES_OPENCOLORIO      "Build with OpenColorIO support" ON)
-option(WITH_CYCLES_OPENIMAGEDENOISE "Build with OpenImageDenoise support" ON)
-option(WITH_CYCLES_OPENSUBDIV       "Build with OpenSubdiv support" ON)
-option(WITH_CYCLES_OPENVDB          "Build with OpenVDB support" ON)
-option(WITH_CYCLES_NANOVDB          "Build with NanoVDB support" ON)
-option(WITH_CYCLES_OSL              "Build with OSL support" ON)
-option(WITH_CYCLES_USD              "Build with USD support" ON)
+option(WITH_CYCLES_OPENCOLORIO      "Build with OpenColorIO support" OFF)
+option(WITH_CYCLES_OPENIMAGEDENOISE "Build with OpenImageDenoise support" OFF)
+option(WITH_CYCLES_OPENSUBDIV       "Build with OpenSubdiv support" OFF)
+option(WITH_CYCLES_OPENVDB          "Build with OpenVDB support" OFF)
+option(WITH_CYCLES_NANOVDB          "Build with NanoVDB support" OFF)
+option(WITH_CYCLES_OSL              "Build with OSL support" OFF)
+option(WITH_CYCLES_USD              "Build with USD support" OFF)
 
 if(UNIX AND NOT APPLE)
   option(WITH_CXX11_ABI              "Build with glibc C++11 ABI. Turn off for compatibility with VFX platform 2022 and earlier." ON)
@@ -221,7 +221,7 @@ oneAPI targets to build AOT binaries for"
 endif()
 
 # Hydra Render Delegate
-option(WITH_CYCLES_HYDRA_RENDER_DELEGATE "Build Cycles Hydra render delegate" ON)
+option(WITH_CYCLES_HYDRA_RENDER_DELEGATE "Build Cycles Hydra render delegate" OFF)
 
 # Error Checking
 option(WITH_STRICT_BUILD_OPTIONS "When requirements for a build option are not met, error instead of disabling the option" OFF)
