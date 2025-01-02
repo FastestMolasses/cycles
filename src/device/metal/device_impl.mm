@@ -157,7 +157,7 @@ MetalDevice::MetalDevice(const DeviceInfo &info, Stats &stats, Profiler &profile
     mtlGeneralCommandQueue = [mtlDevice newCommandQueue];
 
     /* Acceleration structure arg encoder, if needed */
-    if (@available(macos 12.0, *)) {
+    if (@available(macos 12.0, iOS 14.0, *)) {
       if (use_metalrt) {
         MTLArgumentDescriptor *arg_desc_as = [[MTLArgumentDescriptor alloc] init];
         arg_desc_as.dataType = MTLDataTypeInstanceAccelerationStructure;
@@ -185,7 +185,7 @@ MetalDevice::MetalDevice(const DeviceInfo &info, Stats &stats, Profiler &profile
 
       [arg_desc_tex release];
 
-      if (@available(macos 12.0, *)) {
+      if (@available(macos 12.0, iOS 14.0, *)) {
         if (use_metalrt) {
           MTLArgumentDescriptor *arg_desc_as = [[MTLArgumentDescriptor alloc] init];
           arg_desc_as.dataType = MTLDataTypeInstanceAccelerationStructure;
@@ -337,7 +337,7 @@ string MetalDevice::preprocess_source(MetalPipelineType pso_type,
 #  endif
 
   global_defines += "#define __KERNEL_METAL_APPLE__\n";
-  if (@available(macos 14.0, *)) {
+  if (@available(macos 14.0, iOS 17.0, *)) {
     /* Use Program Scope Global Built-ins, when available. */
     global_defines += "#define __METAL_GLOBAL_BUILTINS__\n";
   }
@@ -540,19 +540,19 @@ void MetalDevice::compile_and_load(int device_id, MetalPipelineType pso_type)
     MTLCompileOptions *options = [[MTLCompileOptions alloc] init];
 
     options.fastMathEnabled = YES;
-    if (@available(macos 12.0, *)) {
+    if (@available(macos 12.0, iOS 14.0, *)) {
       options.languageVersion = MTLLanguageVersion2_4;
     }
-#  if defined(MAC_OS_VERSION_13_0)
-    if (@available(macos 13.0, *)) {
+#if defined(MAC_OS_VERSION_13_0) || defined(__IPHONE_16_0)
+    if (@available(macos 13.0, ios 16.0, *)) {
       options.languageVersion = MTLLanguageVersion3_0;
     }
-#  endif
-#  if defined(MAC_OS_VERSION_14_0)
-    if (@available(macos 14.0, *)) {
+#endif
+#if defined(MAC_OS_VERSION_14_0) || defined(__IPHONE_17_0)
+    if (@available(macos 14.0, ios 17.0, *)) {
       options.languageVersion = MTLLanguageVersion3_1;
     }
-#  endif
+#endif
 
     if (getenv("CYCLES_METAL_PROFILING") || getenv("CYCLES_METAL_DEBUG")) {
       path_write_text(path_cache_get(string_printf("%s.metal", kernel_type_as_string(pso_type))),

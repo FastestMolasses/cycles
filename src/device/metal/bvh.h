@@ -16,16 +16,16 @@ CCL_NAMESPACE_BEGIN
 
 class BVHMetal : public BVH {
  public:
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   id<MTLAccelerationStructure> accel_struct = nil;
 
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   id<MTLAccelerationStructure> null_BLAS = nil;
 
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   vector<id<MTLAccelerationStructure>> blas_array;
 
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   vector<id<MTLAccelerationStructure>> unique_blas_array;
 
   Device *device = nullptr;
@@ -58,7 +58,7 @@ class BVHMetal : public BVH {
                              bool refit);
   bool build_TLAS(Progress &progress, id<MTLDevice> device, id<MTLCommandQueue> queue, bool refit);
 
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   void set_accel_struct(id<MTLAccelerationStructure> new_accel_struct);
 };
 

@@ -31,20 +31,22 @@ string MetalInfo::get_device_name(id<MTLDevice> device)
 
 int MetalInfo::get_apple_gpu_core_count(id<MTLDevice> device)
 {
-  int core_count = 0;
-  if (@available(macos 12.0, *)) {
-    io_service_t gpu_service = IOServiceGetMatchingService(
-        kIOMainPortDefault, IORegistryEntryIDMatching(device.registryID));
-    if (CFNumberRef numberRef = (CFNumberRef)IORegistryEntryCreateCFProperty(
-            gpu_service, CFSTR("gpu-core-count"), 0, 0))
-    {
-      if (CFGetTypeID(numberRef) == CFNumberGetTypeID()) {
-        CFNumberGetValue(numberRef, kCFNumberSInt32Type, &core_count);
-      }
-      CFRelease(numberRef);
-    }
-  }
-  return core_count;
+  // TODO: LINK IOKIT FRAMEWORK
+  // int core_count = 0;
+  // if (@available(macos 12.0, *)) {
+  //   io_service_t gpu_service = IOServiceGetMatchingService(
+  //       kIOMainPortDefault, IORegistryEntryIDMatching(device.registryID));
+  //   if (CFNumberRef numberRef = (CFNumberRef)IORegistryEntryCreateCFProperty(
+  //           gpu_service, CFSTR("gpu-core-count"), 0, 0))
+  //   {
+  //     if (CFGetTypeID(numberRef) == CFNumberGetTypeID()) {
+  //       CFNumberGetValue(numberRef, kCFNumberSInt32Type, &core_count);
+  //     }
+  //     CFRelease(numberRef);
+  //   }
+  // }
+  // return core_count;
+  return 2;
 }
 
 AppleGPUArchitecture MetalInfo::get_apple_gpu_architecture(id<MTLDevice> device)
@@ -58,6 +60,9 @@ AppleGPUArchitecture MetalInfo::get_apple_gpu_architecture(id<MTLDevice> device)
   }
   else if (strstr(device_name, "M3")) {
     return APPLE_M3;
+  }
+  else if (strstr(device_name, "M4")) {
+    return APPLE_M4;
   }
   return APPLE_UNKNOWN;
 }

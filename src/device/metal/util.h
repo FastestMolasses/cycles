@@ -24,6 +24,7 @@ enum AppleGPUArchitecture {
   APPLE_M2,
   APPLE_M2_BIG,
   APPLE_M3,
+  APPLE_M4,
   /* Keep APPLE_UNKNOWN at the end of this enum to ensure that unknown future architectures get
    * the most recent defaults when using comparison operators. */
   APPLE_UNKNOWN,

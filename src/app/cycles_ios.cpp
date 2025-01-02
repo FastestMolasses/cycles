@@ -145,7 +145,7 @@ void cycles_ios_cleanup()
 void validate_options()
 {
   if (options.session_params.device.type == DEVICE_NONE) {
-    fprintf(stderr, "Unknown device: %s\n", Device::string_from_type(options.session_params.device.type).c_str());
+    fprintf(stderr, "Unknown device\n");
     exit(EXIT_FAILURE);
   } else if (options.session_params.samples < 0) {
     fprintf(stderr, "Invalid number of samples: %d\n", options.session_params.samples);
@@ -167,6 +167,7 @@ static BufferParams &session_buffer_params()
   return buffer_params;
 }
 
+// TODO: INSTEAD OF PRINTING, CAN WE CALL FROM SWIFT?
 static void session_print_status()
 {
   string status, substatus;

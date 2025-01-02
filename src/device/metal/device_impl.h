@@ -47,10 +47,10 @@ class MetalDevice : public Device {
   id<MTLArgumentEncoder> mtlBlasArgEncoder = nil;
   id<MTLBuffer> blas_buffer = nil;
 
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   vector<id<MTLAccelerationStructure>> unique_blas_array;
 
-  API_AVAILABLE(macos(11.0))
+  API_AVAILABLE(macos(11.0), ios(14.0))
   id<MTLAccelerationStructure> accel_struct = nil;
   /*---------------------------------------------------*/
 

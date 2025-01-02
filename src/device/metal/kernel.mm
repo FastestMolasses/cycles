@@ -40,6 +40,7 @@ struct ShaderCache {
 
     switch (MetalInfo::get_apple_gpu_architecture(mtlDevice)) {
       default:
+      case APPLE_M4:
       case APPLE_M3:
         /* Peak occupancy is achieved through Dynamic Caching on M3 GPUs. */
         for (size_t i = 0; i < DEVICE_KERNEL_NUM; i++) {

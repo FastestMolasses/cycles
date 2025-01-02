@@ -148,7 +148,7 @@ if(WITH_CYCLES_PRECOMPUTE)
     DESTINATION ${CMAKE_INSTALL_PREFIX})
 endif()
 
-if(IOS)
+if(APPLE AND IOS)
   set(SRC
     cycles_ios.cpp
     cycles_ios.h
@@ -160,6 +160,19 @@ if(IOS)
 
   add_library(cycles_ios STATIC ${SRC})
   target_link_libraries(cycles_ios PRIVATE ${LIB})
+
+  # TODO: LINKING ISNT WORKING
+  # Add IOKit framework
+  find_library(IOKIT_FRAMEWORK IOKit)
+  if (NOT IOKIT_FRAMEWORK)
+      message(FATAL_ERROR "IOKit not found")
+  endif()
+  if(IOKIT_FRAMEWORK)
+    target_link_libraries(cycles_ios PRIVATE ${IOKIT_FRAMEWORK})
+  endif()
+
+  set_property(TARGET cycles_ios APPEND_STRING PROPERTY LINK_FLAGS
+        " -framework IOKit")
 
   install(
     TARGETS cycles_ios
