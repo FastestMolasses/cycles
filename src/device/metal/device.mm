@@ -79,7 +79,7 @@ void device_metal_info(vector<DeviceInfo> &devices)
     /* MNEE caused "Compute function exceeds available temporary registers" in macOS < 13 due to a
      * bug in spill buffer allocation sizing. */
     info.has_mnee = false;
-    if (@available(macos 13.0, *)) {
+    if (@available(macos 13.0, ios 16.0, *)) {
       info.has_mnee = true;
     }
 
@@ -87,8 +87,8 @@ void device_metal_info(vector<DeviceInfo> &devices)
 
     /* MetalRT now uses features exposed in Xcode versions corresponding to macOS 14+, so don't
      * expose it in builds from older Xcode versions. */
-#  if defined(MAC_OS_VERSION_14_0)
-    if (@available(macos 14.0, *)) {
+#  if defined(MAC_OS_VERSION_14_0) || defined(__IPHONE_17_0)
+    if (@available(macos 14.0, ios 17.0, *)) {
       info.use_hardware_raytracing = device.supportsRaytracing;
 
       /* Use hardware raytracing for faster rendering on architectures that support it. */
@@ -111,7 +111,17 @@ void device_metal_info(vector<DeviceInfo> &devices)
 string device_metal_capabilities()
 {
   string result = "";
-  auto allDevices = MTLCopyAllDevices();
+  NSArray<id<MTLDevice>> *allDevices;
+#if defined(MAC_OS_VERSION_10_11) || defined(__IPHONE_18_0)
+  if (@available(macos 10.11, ios 18.0, *)) {
+    allDevices = MTLCopyAllDevices();
+  }
+  else
+#endif
+  {
+    allDevices = @[[MTLCreateSystemDefaultDevice() autorelease]];
+  }
+
   uint32_t num_devices = (uint32_t)allDevices.count;
   if (num_devices == 0) {
     return "No Metal devices found\n";
@@ -122,6 +132,12 @@ string device_metal_capabilities()
     string device_name = MetalInfo::get_device_name(device);
     result += string_printf("\t\tDevice: %s\n", device_name.c_str());
   }
+
+#if defined(MAC_OS_VERSION_10_11) || defined(__IPHONE_18_0)
+  if (@available(macos 10.11, ios 18.0, *)) {
+    [allDevices release];
+  }
+#endif
 
   return result;
 }

@@ -40,7 +40,6 @@ struct ShaderCache {
 
     switch (MetalInfo::get_apple_gpu_architecture(mtlDevice)) {
       default:
-      case APPLE_M4:
       case APPLE_M3:
         /* Peak occupancy is achieved through Dynamic Caching on M3 GPUs. */
         for (size_t i = 0; i < DEVICE_KERNEL_NUM; i++) {
@@ -301,6 +300,7 @@ void ShaderCache::load_kernel(DeviceKernel device_kernel,
        * limit. */
       int max_mtlcompiler_threads = 2;
 
+// TODO: ADD iOS SUPPORT WHEN AVAILABLE. https://developer.apple.com/documentation/metal/mtldevice/4133937-maximumconcurrentcompilationtask
 #  if defined(MAC_OS_VERSION_13_3)
       if (@available(macOS 13.3, *)) {
         /* Subtract one to avoid contention with the real-time GPU module. */
@@ -393,7 +393,7 @@ MetalKernelPipeline *ShaderCache::get_best_pipeline(DeviceKernel kernel, const M
 bool MetalKernelPipeline::should_use_binary_archive() const
 {
   /* Issues with binary archives in older macOS versions. */
-  if (@available(macOS 13.0, *)) {
+  if (@available(macos 13.0, ios 16.0, *)) {
     if (auto str = getenv("CYCLES_METAL_DISABLE_BINARY_ARCHIVES")) {
       if (atoi(str) != 0) {
         /* Don't archive if we have opted out by env var. */

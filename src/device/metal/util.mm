@@ -33,7 +33,7 @@ int MetalInfo::get_apple_gpu_core_count(id<MTLDevice> device)
 {
   // TODO: LINK IOKIT FRAMEWORK
   // int core_count = 0;
-  // if (@available(macos 12.0, *)) {
+  // if (@available(macos 12.0, ios 16.0, *)) {
   //   io_service_t gpu_service = IOServiceGetMatchingService(
   //       kIOMainPortDefault, IORegistryEntryIDMatching(device.registryID));
   //   if (CFNumberRef numberRef = (CFNumberRef)IORegistryEntryCreateCFProperty(
@@ -90,11 +90,23 @@ vector<id<MTLDevice>> const &MetalInfo::get_usable_devices()
   }
 
   metal_printf("Usable Metal devices:\n");
-  for (id<MTLDevice> device in MTLCopyAllDevices()) {
+
+  NSArray<id<MTLDevice>> *allDevices;
+#if defined(MAC_OS_VERSION_10_11) || defined(__IPHONE_18_0)
+  if (@available(macos 10.11, ios 18.0, *)) {
+    allDevices = MTLCopyAllDevices();
+  }
+  else
+#endif
+  {
+    allDevices = @[[MTLCreateSystemDefaultDevice() autorelease]];
+  }
+
+  for (id<MTLDevice> device in allDevices) {
     string device_name = get_device_name(device);
     bool usable = false;
 
-    if (@available(macos 12.2, *)) {
+    if (@available(macos 12.2, ios 14.0, *)) {
       const char *device_name_char = [device.name UTF8String];
       if (!(strstr(device_name_char, "Intel") || strstr(device_name_char, "AMD")) &&
           strstr(device_name_char, "Apple"))
@@ -113,6 +125,13 @@ vector<id<MTLDevice>> const &MetalInfo::get_usable_devices()
       metal_printf("  (skipping \"%s\")\n", device_name.c_str());
     }
   }
+
+#if defined(MAC_OS_VERSION_10_11) || defined(__IPHONE_18_0)
+  if (@available(macos 10.11, ios 18.0, *)) {
+    [allDevices release];
+  }
+#endif
+
   if (usable_devices.empty()) {
     metal_printf("   No usable Metal devices found\n");
   }

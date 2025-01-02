@@ -423,7 +423,7 @@ bool MetalDeviceQueue::enqueue(DeviceKernel kernel,
                                                          atIndex:0];
         }
         else {
-          if (@available(macos 12.0, *)) {
+          if (@available(macos 12.0, ios 15.0, *)) {
             [metal_device_->mtlBufferKernelParamsEncoder setBuffer:nil offset:0 atIndex:0];
           }
         }
@@ -456,7 +456,7 @@ bool MetalDeviceQueue::enqueue(DeviceKernel kernel,
                                                        atIndex:pointer_index];
       }
       else {
-        if (@available(macos 12.0, *)) {
+        if (@available(macos 12.0, ios 15.0, *)) {
           [metal_device_->mtlBufferKernelParamsEncoder setBuffer:nil
                                                           offset:0
                                                          atIndex:pointer_index];
@@ -484,7 +484,7 @@ bool MetalDeviceQueue::enqueue(DeviceKernel kernel,
                                               offset:0
                                              atIndex:2];
 
-    if (@available(macos 12.0, *)) {
+    if (@available(macos 12.0, ios 15.0, *)) {
       if (metal_device_->use_metalrt && device_kernel_has_intersection(kernel)) {
         if (id<MTLAccelerationStructure> accel_struct = metal_device_->accel_struct) {
           [metal_device_->mtlAncillaryArgEncoder setAccelerationStructure:accel_struct atIndex:3];
@@ -522,7 +522,7 @@ bool MetalDeviceQueue::enqueue(DeviceKernel kernel,
     [mtlComputeCommandEncoder setBuffer:arg_buffer offset:metal_offsets atIndex:2];
 
     if (metal_device_->use_metalrt && device_kernel_has_intersection(kernel)) {
-      if (@available(macos 12.0, *)) {
+      if (@available(macos 12.0, ios 15.0, *)) {
 
         if (id<MTLAccelerationStructure> accel_struct = metal_device_->accel_struct) {
           /* Mark all Accelerations resources as used */

@@ -157,7 +157,7 @@ MetalDevice::MetalDevice(const DeviceInfo &info, Stats &stats, Profiler &profile
     mtlGeneralCommandQueue = [mtlDevice newCommandQueue];
 
     /* Acceleration structure arg encoder, if needed */
-    if (@available(macos 12.0, iOS 14.0, *)) {
+    if (@available(macos 12.0, ios 14.0, *)) {
       if (use_metalrt) {
         MTLArgumentDescriptor *arg_desc_as = [[MTLArgumentDescriptor alloc] init];
         arg_desc_as.dataType = MTLDataTypeInstanceAccelerationStructure;
@@ -185,7 +185,7 @@ MetalDevice::MetalDevice(const DeviceInfo &info, Stats &stats, Profiler &profile
 
       [arg_desc_tex release];
 
-      if (@available(macos 12.0, iOS 14.0, *)) {
+      if (@available(macos 12.0, ios 14.0, *)) {
         if (use_metalrt) {
           MTLArgumentDescriptor *arg_desc_as = [[MTLArgumentDescriptor alloc] init];
           arg_desc_as.dataType = MTLDataTypeInstanceAccelerationStructure;
@@ -337,7 +337,7 @@ string MetalDevice::preprocess_source(MetalPipelineType pso_type,
 #  endif
 
   global_defines += "#define __KERNEL_METAL_APPLE__\n";
-  if (@available(macos 14.0, iOS 17.0, *)) {
+  if (@available(macos 14.0, ios 17.0, *)) {
     /* Use Program Scope Global Built-ins, when available. */
     global_defines += "#define __METAL_GLOBAL_BUILTINS__\n";
   }
@@ -349,9 +349,11 @@ string MetalDevice::preprocess_source(MetalPipelineType pso_type,
   }
 #  endif
 
-  NSProcessInfo *processInfo = [NSProcessInfo processInfo];
-  NSOperatingSystemVersion macos_ver = [processInfo operatingSystemVersion];
-  global_defines += "#define __KERNEL_METAL_MACOS__ " + to_string(macos_ver.majorVersion) + "\n";
+# if TARGET_OS_OSX
+    NSProcessInfo *processInfo = [NSProcessInfo processInfo];
+    NSOperatingSystemVersion macos_ver = [processInfo operatingSystemVersion];
+    global_defines += "#define __KERNEL_METAL_MACOS__ " + to_string(macos_ver.majorVersion) + "\n";
+# endif
 
 #  if TARGET_CPU_ARM64
   global_defines += "#define __KERNEL_METAL_TARGET_CPU_ARM64__\n";
@@ -540,7 +542,7 @@ void MetalDevice::compile_and_load(int device_id, MetalPipelineType pso_type)
     MTLCompileOptions *options = [[MTLCompileOptions alloc] init];
 
     options.fastMathEnabled = YES;
-    if (@available(macos 12.0, iOS 14.0, *)) {
+    if (@available(macos 12.0, ios 14.0, *)) {
       options.languageVersion = MTLLanguageVersion2_4;
     }
 #if defined(MAC_OS_VERSION_13_0) || defined(__IPHONE_16_0)

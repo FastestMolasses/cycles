@@ -119,7 +119,7 @@ BVHMetal::BVHMetal(const BVHParams &params_,
 
 BVHMetal::~BVHMetal()
 {
-  if (@available(macos 12.0, iOS 14.0, *)) {
+  if (@available(macos 12.0, ios 14.0, *)) {
     set_accel_struct(nil);
     if (null_BLAS) {
       [null_BLAS release];
@@ -130,7 +130,7 @@ BVHMetal::~BVHMetal()
 API_AVAILABLE(macos(11.0), ios(14.0))
 void BVHMetal::set_accel_struct(id<MTLAccelerationStructure> new_accel_struct)
 {
-  if (@available(macos 12.0, iOS 14.0, *)) {
+  if (@available(macos 12.0, ios 14.0, *)) {
     if (accel_struct) {
       device->stats.mem_free(accel_struct.allocatedSize);
       [accel_struct release];
@@ -150,7 +150,7 @@ bool BVHMetal::build_BLAS_mesh(Progress &progress,
                                Geometry *const geom,
                                bool refit)
 {
-  if (@available(macos 12.0, iOS 14.0, *)) {
+  if (@available(macos 12.0, ios 14.0, *)) {
     /* Build BLAS for triangle primitives */
     Mesh *const mesh = static_cast<Mesh *const>(geom);
     if (mesh->num_triangles() == 0) {
@@ -710,7 +710,7 @@ bool BVHMetal::build_BLAS_pointcloud(Progress &progress,
                                      Geometry *const geom,
                                      bool refit)
 {
-  if (@available(macos 12.0, iOS 14.0, *)) {
+  if (@available(macos 12.0, ios 14.0, *)) {
     /* Build BLAS for point cloud */
     PointCloud *pointcloud = static_cast<PointCloud *>(geom);
     if (pointcloud->num_points() == 0) {
@@ -969,7 +969,7 @@ bool BVHMetal::build_TLAS(Progress &progress,
   /* Wait for all BLAS builds to finish. */
   g_bvh_build_throttler.wait_for_all();
 
-  if (@available(macos 12.0, iOS 14.0, *)) {
+  if (@available(macos 12.0, ios 14.0, *)) {
     /* Defined inside available check, for return type to be available. */
     auto make_null_BLAS = [](id<MTLDevice> mtl_device,
                              id<MTLCommandQueue> queue) -> id<MTLAccelerationStructure> {
@@ -1061,7 +1061,7 @@ bool BVHMetal::build_TLAS(Progress &progress,
       else {
         int blas_index = (int)[all_blas count];
         instance_mapping[blas] = blas_index;
-        if (@available(macos 12.0, iOS 14.0, *)) {
+        if (@available(macos 12.0, ios 14.0, *)) {
           [all_blas addObject:(blas ? blas->accel_struct : null_BLAS)];
         }
         return blas_index;
@@ -1309,7 +1309,7 @@ bool BVHMetal::build(Progress &progress,
                      id<MTLCommandQueue> queue,
                      bool refit)
 {
-  if (@available(macos 12.0, iOS 14.0, *)) {
+  if (@available(macos 12.0, ios 14.0, *)) {
     if (refit) {
       /* It isn't valid to refit a non-existent BVH, or one which wasn't constructed as dynamic.
        * In such cases, assert in development but try to recover in the wild. */
