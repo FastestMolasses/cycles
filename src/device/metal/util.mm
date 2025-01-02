@@ -105,14 +105,16 @@ vector<id<MTLDevice>> const &MetalInfo::get_usable_devices()
   for (id<MTLDevice> device in allDevices) {
     string device_name = get_device_name(device);
     bool usable = false;
-
     if (@available(macos 12.2, ios 14.0, *)) {
-      const char *device_name_char = [device.name UTF8String];
-      if (!(strstr(device_name_char, "Intel") || strstr(device_name_char, "AMD")) &&
-          strstr(device_name_char, "Apple"))
-      {
-        /* TODO: Implement a better way to identify device vendor instead of relying on name. */
+      if ([device supportsFamily:MTLGPUFamilyApple3]) {
         usable = true;
+      }
+      if ([device hasUnifiedMemory] && ![device supportsFamily:MTLGPUFamilyMac1]) {
+        if (@available(macos 13.0, ios 16.0, *)) {
+          if ([device supportsFamily:MTLGPUFamilyMetal3]) {
+            usable = true;
+          }
+        }
       }
     }
 
