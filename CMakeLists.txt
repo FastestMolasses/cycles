@@ -50,7 +50,7 @@ if(POLICY CMP0074)
 endif()
 if(POLICY CMP0144)
   cmake_policy(SET CMP0144 NEW)
-endif() 
+endif()
 
 # Avoid having empty buildtype.
 set(CMAKE_BUILD_TYPE_INIT "Release")
@@ -59,6 +59,24 @@ set(CMAKE_BUILD_TYPE_INIT "Release")
 # Initialize project.
 
 project(Cycles)
+
+###########################################################################
+# Platform specific settings
+
+# iOS specific configuration
+option(IOS "Build for iOS" OFF)
+
+if(IOS)
+  set(WITH_CYCLES_STANDALONE OFF)
+  set(WITH_CYCLES_STANDALONE_GUI OFF)
+  set(WITH_CYCLES_DEVICE_CUDA OFF)
+  set(WITH_CYCLES_DEVICE_OPTIX OFF)
+  set(WITH_CYCLES_DEVICE_HIP OFF)
+  set(WITH_CYCLES_DEVICE_ONEAPI OFF)
+  set(WITH_CYCLES_HYDRA_RENDER_DELEGATE OFF)
+  set(WITH_CYCLES_DEVICE_METAL ON)
+  set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install/ios" CACHE PATH "Installation path" FORCE)
+endif()
 
 ###########################################################################
 # Macros and utilities.
@@ -76,7 +94,7 @@ include(macros)
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT AND NOT IOS)
   set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/install" CACHE PATH "Installation path" FORCE)
 endif()
 
@@ -88,8 +106,8 @@ else()
   string(REPLACE "\${BUILD_TYPE}" "" CMAKE_INSTALL_PREFIX_WITH_CONFIG ${CMAKE_INSTALL_PREFIX})
 endif()
 
-# Some stuff is different when building stabdalone Cycles from inside
-# Blender source code and when building it from it's own repository.
+# Some stuff is different when building standalone Cycles from inside
+# Blender source code and when building it from its own repository.
 set(CYCLES_STANDALONE_REPOSITORY TRUE)
 
 # Force standalone build.
@@ -107,32 +125,49 @@ set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS
 # Options.
 
 # Use precompiled library dependencies
-option(WITH_LIBS_PRECOMPILED        "Use precompiled library dependencies" ON)
+if(NOT IOS)
+  option(WITH_LIBS_PRECOMPILED        "Use precompiled library dependencies" ON)
+endif()
 
 # Library dependencies
-option(WITH_CYCLES_ALEMBIC          "Build with Alembic procedural support" OFF)
-option(WITH_CYCLES_EMBREE           "Build with Embree support" OFF)
-option(WITH_CYCLES_LOGGING          "Build with logging support (using glog)" OFF)
-option(WITH_CYCLES_OPENCOLORIO      "Build with OpenColorIO support" OFF)
-option(WITH_CYCLES_OPENIMAGEDENOISE "Build with OpenImageDenoise support" OFF)
-option(WITH_CYCLES_OPENSUBDIV       "Build with OpenSubdiv support" OFF)
-option(WITH_CYCLES_OPENVDB          "Build with OpenVDB support" OFF)
-option(WITH_CYCLES_NANOVDB          "Build with NanoVDB support" OFF)
-option(WITH_CYCLES_OSL              "Build with OSL support" OFF)
-option(WITH_CYCLES_USD              "Build with USD support" OFF)
+if(IOS)
+  option(WITH_CYCLES_ALEMBIC          "Build with Alembic procedural support" OFF)
+  option(WITH_CYCLES_EMBREE           "Build with Embree support" OFF)
+  option(WITH_CYCLES_LOGGING          "Build with logging support (using glog)" OFF)
+  option(WITH_CYCLES_OPENCOLORIO      "Build with OpenColorIO support" OFF)
+  option(WITH_CYCLES_OPENIMAGEDENOISE "Build with OpenImageDenoise support" OFF)
+  option(WITH_CYCLES_OPENSUBDIV       "Build with OpenSubdiv support" OFF)
+  option(WITH_CYCLES_OPENVDB          "Build with OpenVDB support" OFF)
+  option(WITH_CYCLES_NANOVDB          "Build with NanoVDB support" OFF)
+  option(WITH_CYCLES_OSL              "Build with OSL support" OFF)
+  option(WITH_CYCLES_USD              "Build with USD support" OFF)
+else()
+  option(WITH_CYCLES_ALEMBIC          "Build with Alembic procedural support" ON)
+  option(WITH_CYCLES_EMBREE           "Build with Embree support" ON)
+  option(WITH_CYCLES_LOGGING          "Build with logging support (using glog)" OFF)
+  option(WITH_CYCLES_OPENCOLORIO      "Build with OpenColorIO support" ON)
+  option(WITH_CYCLES_OPENIMAGEDENOISE "Build with OpenImageDenoise support" ON)
+  option(WITH_CYCLES_OPENSUBDIV       "Build with OpenSubdiv support" ON)
+  option(WITH_CYCLES_OPENVDB          "Build with OpenVDB support" ON)
+  option(WITH_CYCLES_NANOVDB          "Build with NanoVDB support" ON)
+  option(WITH_CYCLES_OSL              "Build with OSL support" ON)
+  option(WITH_CYCLES_USD              "Build with USD support" ON)
+endif()
 
 if(UNIX AND NOT APPLE)
-  option(WITH_CXX11_ABI              "Build with glibc C++11 ABI. Turn off for compatibility with VFX platform 2022 and earlier." ON)
+  option(WITH_CXX11_ABI               "Build with glibc C++11 ABI. Turn off for compatibility with VFX platform 2022 and earlier." ON)
 endif()
 
 # Development Features
 option(WITH_CYCLES_DEBUG             "Build Cycles with options useful for debugging (e.g., MIS)" OFF)
 option(WITH_CYCLES_DEBUG_NAN         "Build Cycles with additional asserts for detecting NaNs and invalid values" OFF)
 option(WITH_CYCLES_NATIVE_ONLY       "Build Cycles with native kernel only (which fits current CPU, use for development only)" OFF)
-option(WITH_CYCLES_STANDALONE_GUI    "Build Cycles standalone with GUI" OFF)
+if(NOT IOS)
+  option(WITH_CYCLES_STANDALONE_GUI  "Build Cycles standalone with GUI" OFF)
+endif()
 
 # NVIDIA CUDA & OptiX
-if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"))
+if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64") AND NOT IOS)
   option(WITH_CYCLES_DEVICE_CUDA "Enable Cycles NVIDIA CUDA compute support" ON)
   option(WITH_CYCLES_DEVICE_OPTIX "Enable Cycles NVIDIA OptiX support" ON)
   mark_as_advanced(WITH_CYCLES_DEVICE_CUDA)
@@ -167,7 +202,7 @@ When set, this path will be used at runtime to compile OptiX kernels."
 endif()
 
 # AMD HIP
-if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"))
+if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64") AND NOT IOS)
   option(WITH_CYCLES_DEVICE_HIP "Enable Cycles AMD HIP support" ON)
   option(WITH_CYCLES_HIP_BINARIES "Build Cycles AMD HIP binaries" OFF)
   # Radeon VII (gfx906) not currently working with HIP SDK, so left out of the list.
@@ -181,19 +216,17 @@ if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"))
   mark_as_advanced(WITH_CYCLES_DEVICE_HIP)
   mark_as_advanced(CYCLES_HIP_BINARIES_ARCH)
 
-   option(WITH_CYCLES_DEVICE_HIPRT "Enable Cycles AMD HIPRT support" OFF)
-   mark_as_advanced(WITH_CYCLES_DEVICE_HIPRT)
-
+  option(WITH_CYCLES_DEVICE_HIPRT "Enable Cycles AMD HIPRT support" OFF)
+  mark_as_advanced(WITH_CYCLES_DEVICE_HIPRT)
 endif()
 
 # Apple Metal
 if(APPLE)
   option(WITH_CYCLES_DEVICE_METAL "Enable Cycles Apple Metal compute support" ON)
-  option(IOS "Build for iOS" ON)
 endif()
 
 # oneAPI
-if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64"))
+if(NOT APPLE AND NOT (WIN32 AND CMAKE_SYSTEM_PROCESSOR STREQUAL "ARM64") AND NOT IOS)
   option(WITH_CYCLES_DEVICE_ONEAPI "Enable Cycles oneAPI compute support" OFF)
   option(WITH_CYCLES_ONEAPI_BINARIES "\
 Enable Ahead-Of-Time compilation for Cycles oneAPI device"
@@ -222,7 +255,9 @@ oneAPI targets to build AOT binaries for"
 endif()
 
 # Hydra Render Delegate
-option(WITH_CYCLES_HYDRA_RENDER_DELEGATE "Build Cycles Hydra render delegate" OFF)
+if(NOT IOS)
+  option(WITH_CYCLES_HYDRA_RENDER_DELEGATE "Build Cycles Hydra render delegate" OFF)
+endif()
 
 # Error Checking
 option(WITH_STRICT_BUILD_OPTIONS "When requirements for a build option are not met, error instead of disabling the option" OFF)
